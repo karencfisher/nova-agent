@@ -11,7 +11,7 @@ from langchain_community.vectorstores import FAISS
 from openai import OpenAI
 
 from tools.search.async_web_scraper import AsyncWebScraper
-from tools.timer import timer
+from utils.timer import timer
     
 
 class SearchTool:

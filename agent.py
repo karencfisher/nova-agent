@@ -7,7 +7,7 @@ from openai import OpenAI
 from tools.memory.core_memory import CoreMemory, ContextMemory
 from tools.memory.chat_memory import ChatMemory
 from tool_specs import tool_specs
-from tools.timer import timer
+from utils.timer import timer
 from tools.face_expression import FaceExpression
 from transformers import pipeline
 
