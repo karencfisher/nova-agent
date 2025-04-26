@@ -1,25 +1,8 @@
 from tools.memory.core_memory import CoreMemory, MemoryRetrieval                             
 from tools.search.search import Search
 from tools.browser.browser import Browser
-from tools.society_of_mind.deep_thought import Thinking
 
 tool_specs = [
-    {  
-        'name': 'deep_thought',
-        'tool': Thinking.run,
-        'metadata': {
-            "type": "function",
-            "function": {
-                "name": "deep_thought",
-                "description": Thinking.description,
-                "parameters": {
-                    "type": "object",
-                    "properties": Thinking.properties,
-                    "required": ["query"],
-                },
-            }
-        }
-    },
     {  
         'name': 'memory_save',
         'tool': CoreMemory.memory_save,
