@@ -2,6 +2,7 @@ from uuid import uuid4
 import os
 import json
 from utils.timer import timer
+from datetime import date
 
 class ChatMemory:
     def __init__(self, sys_prompt, agent_memory, max_messages=100):
@@ -14,6 +15,11 @@ class ChatMemory:
             {
                 "role": "system", 
                 "content": "[MEMORY]\n" + json.dumps(agent_memory),
+            }
+            # today's date
+            , {
+                "role": "system", 
+                "content": f"[DATE]\n{self.get_todays_date()}",
             }
         ]    
         
@@ -49,6 +55,9 @@ class ChatMemory:
             )
         ]
         return filtered_messages
+    
+    def get_todays_date(self):
+        return date.today().isoformat()
         
 
 
