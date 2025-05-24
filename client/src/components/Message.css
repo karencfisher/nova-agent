@@ -1,0 +1,19 @@
+div {
+    border-radius: 10px;
+    width: 98%;
+    padding: 10px;
+}
+
+.user {
+    background-color: rgba(7, 104, 70, 0.8);
+    justify-content: flex-start;
+}
+
+.error {
+    background-color: red;
+}
+
+.assistant {
+    background-color: rgba(128, 44, 16, 0.8);
+    justify-content: flex-start;
+}

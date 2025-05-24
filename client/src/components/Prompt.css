@@ -1,0 +1,36 @@
+.prompt {
+    padding: 0px;
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.prompt textarea {
+    width: 100%;
+    resize: vertical;
+    background-color: rgb(31, 53, 53);
+    padding: 10px;
+    color:antiquewhite;
+}
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 10%;
+    padding: 0px 2px 0px 0px;
+}
+
+.buttons button {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: fit-content;
+    background-color: rgb(38, 14, 61);
+    color:antiquewhite;
+}
+
+.buttons button[data-lit="true"] {
+    background-color: red;
+}
+
