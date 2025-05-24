@@ -72,6 +72,8 @@ class Agent:
 
     @timer
     def agent_step(self, user_message, img=None):
+        if user_message is None or user_message == '':
+            return
         expressions, emotions, context_memories = self.__augment_prompt(user_message, img)
         first_message = [{
             "role": "user",
@@ -113,13 +115,14 @@ class Agent:
             response = chat_completion.choices[0]
             first_message = []
             
-            # add the user message to the chat memory
-            self.chat_memory.append(
-                {
-                    "role": "user",
-                    "content": user_message
-                }
-            )
+            # add the user message to the chat memory (if not already there)
+            if user_message != self.chat_memory.get_last_message():
+                self.chat_memory.append(
+                    {
+                        "role": "user",
+                        "content": user_message
+                    }
+                )
 
             # update the messages with the agent's response
             self.chat_memory.append(response.message.dict())

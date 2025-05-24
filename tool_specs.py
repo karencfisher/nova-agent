@@ -1,8 +1,22 @@
 from tools.memory.core_memory import CoreMemory, MemoryRetrieval                             
 from tools.search.search import Search
 from tools.browser.browser import Browser
+from tools.get_time.get_time import GetTime
+
 
 tool_specs = [
+    {
+        'name': 'get_time',
+        'tool': GetTime.get_todays_date,
+        'metadata': {
+            "type": "function",
+            "function": {
+                "name": "get_time",
+                "description": GetTime.description,
+                "parameters": None
+            }
+        }
+    },
     {  
         'name': 'memory_save',
         'tool': CoreMemory.memory_save,
