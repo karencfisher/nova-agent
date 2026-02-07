@@ -23,8 +23,7 @@ class SearchTool:
         self.db = None
 
         load_dotenv()
-        self.google_api_key = os.getenv('GOOGLE_API_KEY')
-        self.google_cx = os.getenv('GOOGLE_CSE_ID')
+        self.serpapi_key = os.getenv('SERPAPI_KEY')
 
         self.embeddings = HuggingFaceEmbeddings()
         self.text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
@@ -35,17 +34,39 @@ class SearchTool:
         )
 
     def __get_pages(self, query):
-        # call Google custom search engine to find websites
-        url = 'https://www.googleapis.com/customsearch/v1'
-        params = {"key": self.google_api_key,
-                  "cx": self.google_cx,
-                  "q": query,
-                  "num": self.num_search}
-        response = requests.get(url, params)
+        # Use SerpAPI as the primary and only external search provider.
+        if self.serpapi_key:
+            print('Using SerpAPI as primary search provider')
+            return self.__serpapi_pages(query, self.serpapi_key)
 
-        if response.status_code != 200:
-            return [{"error_response": response.status_code}]
-        return response.json()['items']
+        # No SerpAPI key provided — do not call Google CSE anymore.
+        print('No SERPAPI_KEY configured. External search is disabled.')
+        return [{"error_response": 'no_search_provider', "message": "Set SERPAPI_KEY in .env or configure a local crawler."}]
+
+    def __serpapi_pages(self, query, api_key):
+        # Simple SerpAPI fallback: returns list of items with 'title' and 'link'
+        url = 'https://serpapi.com/search.json'
+        params = {
+            'engine': 'google',
+            'q': query,
+            'num': self.num_search,
+            'api_key': api_key
+        }
+        try:
+            resp = requests.get(url, params=params, timeout=10)
+            if resp.status_code != 200:
+                print(f"SerpAPI error: {resp.status_code} {resp.text}")
+                return [{"error_response": resp.status_code, "body": resp.text}]
+            data = resp.json()
+            results = []
+            for r in data.get('organic_results', [])[: self.num_search]:
+                title = r.get('title') or r.get('position')
+                link = r.get('link') or r.get('source')
+                results.append({'title': title, 'link': link})
+            return results
+        except Exception as e:
+            print(f"SerpAPI request failed: {e}")
+            return [{"error_response": 'serpapi_request_failed', "body": str(e)}]
     
     async def __get_documents_async(self, items):
         scraper = AsyncWebScraper(self.text_splitter)
@@ -59,7 +80,16 @@ class SearchTool:
     
     def __store_documents(self, docs):
         # vectorize documents and select best k_best
-        self.db = FAISS.from_documents(documents=docs, embedding=self.embeddings)
+        if not docs:
+            print("No documents retrieved to store (empty docs). Aborting indexing.")
+            self.db = None
+            return
+        try:
+            self.db = FAISS.from_documents(documents=docs, embedding=self.embeddings)
+        except Exception as e:
+            print(f"Error creating FAISS index: {e}")
+            self.db = None
+            return
 
     def __get_selections(self, query):
         # vectorize documents and select best k_best
@@ -97,6 +127,9 @@ class SearchTool:
         print(f'Found {len(items)} pages\ngetting documents\n')   
         docs = self.__get_documents(items)
         self.__store_documents(docs)
+        if not self.db:
+            print('No index available after storing documents; returning no results')
+            return 'No documents could be indexed for this query.'
         print(f'Stored {len(docs)} documents\ngetting selections\n')
         selections = self.__get_selections(query)
         print(f'Got {len(selections)} selections\ngetting summary\n')

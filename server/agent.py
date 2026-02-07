@@ -8,8 +8,6 @@ from tools.memory.core_memory import CoreMemory, ContextMemory
 from tools.memory.chat_memory import ChatMemory
 from tool_specs import tool_specs
 from utils.timer import timer
-from tools.face_expression import FaceExpression
-from transformers import pipeline
 
 
 class Agent:
@@ -18,7 +16,7 @@ class Agent:
         self.client = OpenAI(
             api_key=os.getenv('OPENAI_API_KEY'),
         )
-        self.model = "gpt-4o-mini"
+        self.model = "gpt-5-nano"
         
         with open('system_prompt.txt', 'r') as FILE:
             system_prompt_os = FILE.read()
@@ -33,97 +31,27 @@ class Agent:
             
         self.message_queue = message_queue
         self.tool_queue = Queue()
-        self.face_expression = FaceExpression()
-        
-        self.emotion_classifier = pipeline(
-            "text-classification", 
-            model="j-hartmann/emotion-english-distilroberta-base", 
-            return_all_scores=True,
-        )
-                
-    @timer
-    def __augment_prompt(self, user_message, img=None):
-        if img is not None and img != '':
-            # infer emotions on the image
-            img = img.split(',')[1]
-            expressions = self.face_expression.infer_emotions(img)
-        else:
-            expressions = "No facial expressions detected"
-        print(f"Facial expressions detected: {expressions}")
-            
-        # get relevant memories from the context memory
-        context_memories = ContextMemory().retrieve_memories(user_message, 10)
-        if context_memories == "":
-            context_memories = "No relevant memories found in the context memory."
-        
-        # Infer basic emotions in the user_message
-        try:
-            results = self.emotion_classifier(user_message)
-            emotions = [(result['label'], result['score']) for result in results[0]]
-            emotions.sort(key=lambda x: x[1], reverse=True)
-            emotions = {emotion: str(prob) for emotion, prob in emotions}
-            print(f"Emotions in prompt detected: {emotions}")
-            emotions = json.dumps(emotions)
-        except Exception as e:
-            print(f"Error in detecting emotions: {e}")
-            emotions = "No emotions detected in the prompt."
-        
-        return expressions, emotions, context_memories
 
     @timer
     def agent_step(self, user_message, img=None):
         if user_message is None or user_message == '':
             return
-        expressions, emotions, context_memories = self.__augment_prompt(user_message, img)
-        first_message = [{
-            "role": "user",
-            "content": [
-                {
-                    "type": "text",
-                    "text": 'Respond to the user\'s message:\n'\
-                        +  f'{user_message}\n'\
-                        + 'While keeping in mind the emotions detected in the prompt:\n'\
-                        + f'{emotions}\n'\
-                        + 'And the facial expression:\n'\
-                        + f'{expressions}\n'\
-                        + 'And the visual setting\n'\
-                        + 'Without explicitly mentioning them unless asked. But be supportive\n'\
-                        + 'as appropriate, or detailed and factual as needed.\n'\
-                        + 'Also, consider prior context memories (if any):\n'\
-                        + f'{context_memories}\n'
-                },
-            ]
-        }]
-        if img is not None and img != '':
-            print(f"Adding image to the prompt: {img.split(',')[0]}")
-            first_message[0]['content'].append(
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{img.split(',')[1]}"}
-                }
-            )
         
-        # agentic loop 
+        self.chat_memory.append({
+            "role": "user",
+            "content": user_message
+        })
+        
         while True:
             chat_completion = self.client.chat.completions.create(
                 model=self.model,
                 temperature=1,
-                messages=self.chat_memory.get_chat_memory() + first_message,
+                messages=self.chat_memory.get_chat_memory(),
                 tools=self.tools_metadata,
                 tool_choice="auto"
             )
             response = chat_completion.choices[0]
-            first_message = []
             
-            # add the user message to the chat memory (if not already there)
-            if user_message != self.chat_memory.get_last_message():
-                self.chat_memory.append(
-                    {
-                        "role": "user",
-                        "content": user_message
-                    }
-                )
-
             # update the messages with the agent's response
             self.chat_memory.append(response.message.dict())
             

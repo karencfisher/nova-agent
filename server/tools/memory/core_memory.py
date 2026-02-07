@@ -18,9 +18,9 @@ class CoreMemory:
         # arg 1: section of memory to edit
         "section": {
             "type": "string",
-            "enum": ["human", "agent"],
-            "description": "Must be either 'human' " \
-            + "(to save information about the human) or 'agent'" \
+            "enum": ["user", "agent"],
+            "description": "Must be either 'user' " \
+            + "(to save information about the user) or 'agent'" \
             + "(to save information about yourself)",            
         },
         "contextual": {
