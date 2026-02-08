@@ -43,8 +43,8 @@ class CoreMemory:
         agent_memory = json.load(FILE)
             
     def memory_save(section, contextual, memory_key, memory_value):
-        if contextual and section == 'human':
-            print('Saving contextual memory for human')
+        if contextual and section == 'user':
+            print('Saving contextual memory for user')
             ContextMemory().store_memory({
                 'key': memory_key,
                 'content': memory_value
