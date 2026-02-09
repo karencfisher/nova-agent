@@ -43,16 +43,19 @@ class CoreMemory:
         agent_memory = json.load(FILE)
             
     def memory_save(section, contextual, memory_key, memory_value):
-        if contextual and section == 'user':
-            print('Saving contextual memory for user')
-            ContextMemory().store_memory({
-                'key': memory_key,
-                'content': memory_value
-            })
-        else:
-            CoreMemory.agent_memory[section][memory_key] = memory_value
-            CoreMemory.persist_memory()
-        return f'Updated memory'
+        try:
+            if contextual and section == 'user':
+                print('Saving contextual memory for user')
+                ContextMemory().store_memory({
+                    'key': memory_key,
+                    'content': memory_value
+                })
+            else:
+                CoreMemory.agent_memory[section][memory_key] = memory_value
+                CoreMemory.persist_memory()
+            return f'Updated memory'
+        except Exception as err:
+            return f'An error occured: {err}'
            
     def persist_memory():
         with open('tools\\memory\\agent_memory.json', 'w', encoding='utf-8') as FILE:

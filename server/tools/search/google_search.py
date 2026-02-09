@@ -123,7 +123,9 @@ class SearchTool:
     @timer
     def run(self, query):
         print(f'Searching for: {query}\n')
-        items = self.__get_pages(query)   
+        items = self.__get_pages(query)
+        if items[0].get('error_response') is not None:
+            return(f'Search error: {items[0]["body"]}')
         print(f'Found {len(items)} pages\ngetting documents\n')   
         docs = self.__get_documents(items)
         self.__store_documents(docs)

@@ -19,7 +19,7 @@ export default function App(props) {
     const {cancel, voices} = useSpeechSynthesis();
     const voice = useRef(null);
 
-    const host = 'http://127.0.0.1:5000';
+    const host = 'http://127.0.0.1:5001';
 
     async function sendMessage(msg) {
         if (msg === "") return;
