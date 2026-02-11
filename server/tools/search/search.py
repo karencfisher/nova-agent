@@ -23,6 +23,6 @@ class Search:
         print(f'\nSearching on {kwargs['query']}')
         results = Search.google_search.run(**kwargs)
         print(f'Results: {results}\n')
-        return results
+        return {'done': True, 'text': results}
     
         

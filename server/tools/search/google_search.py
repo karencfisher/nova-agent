@@ -147,5 +147,5 @@ class SearchTool:
             'text': f'Stored {len(docs)} summarizing results\n'
         })  
         output = self.__get_summary(selections)
-        return {'done': True, 'text': output}
+        return output
 

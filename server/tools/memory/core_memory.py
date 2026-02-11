@@ -53,9 +53,9 @@ class CoreMemory:
             else:
                 CoreMemory.agent_memory[kwargs['section']][kwargs['memory_key']] = kwargs['memory_value']
                 CoreMemory.persist_memory()
-            return f'Updated memory'
+            return {'done': True, 'text': 'Updated memory'}
         except Exception as err:
-            return f'An error occured: {err}'
+            return {'done': True, 'text': f'An error occured: {err}'}
            
     def persist_memory():
         with open('tools\\memory\\agent_memory.json', 'w', encoding='utf-8') as FILE:
@@ -76,7 +76,7 @@ class MemoryRetrieval:
     def memory_retrieve(**kwargs):
         # from context memory
         documents = ContextMemory().retrieve_memories(kwargs['query'], 10)
-        return documents
+        return {'done': True, 'text': documents}
             
         
 class ContextMemory:

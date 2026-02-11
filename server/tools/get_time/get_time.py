@@ -27,4 +27,4 @@ class GetTime:
         day_of_week = now.strftime('%A')
         current_time = now.strftime('%H:%M:%S')
         result = {"date": current_date, "day": day_of_week, "time": current_time}
-        return json.dumps(result)
+        return {'done': True, 'text': json.dumps(result)}
