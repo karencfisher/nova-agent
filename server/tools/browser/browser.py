@@ -14,7 +14,7 @@ class Browser:
         }
     }
     
-    def run(url):
-        open_page(url, new=0)
-        return f'url opened'
+    def run(**kwargs):
+        open_page(kwargs['url'], new=0)
+        return {'done': True, 'text': f'kwargs["url"] opened'}
     

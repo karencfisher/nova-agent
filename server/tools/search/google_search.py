@@ -121,20 +121,31 @@ class SearchTool:
         return response
     
     @timer
-    def run(self, query):
-        print(f'Searching for: {query}\n')
-        items = self.__get_pages(query)
+    def run(self, **kwargs):
+        items = self.__get_pages(kwargs['query'])
         if items[0].get('error_response') is not None:
             return(f'Search error: {items[0]["body"]}')
-        print(f'Found {len(items)} pages\ngetting documents\n')   
+        print(f'Found {len(items)} pages, parsing pages\n')
+        kwargs['tool_queue'].put({
+            'done': False, 
+            'text': f'Found {len(items)} pages\ngetting documents\n'
+        })   
         docs = self.__get_documents(items)
         self.__store_documents(docs)
         if not self.db:
             print('No index available after storing documents; returning no results')
             return 'No documents could be indexed for this query.'
         print(f'Stored {len(docs)} documents\ngetting selections\n')
-        selections = self.__get_selections(query)
+        kwargs['tool_queue'].put({
+            'done': False, 
+            'text': f'Stored {len(docs)} documents, getting selections\n'
+        })  
+        selections = self.__get_selections(kwargs['query'])
         print(f'Got {len(selections)} selections\ngetting summary\n')
+        kwargs['tool_queue'].put({
+            'done': False, 
+            'text': f'Stored {len(docs)} summarizing results\n'
+        })  
         output = self.__get_summary(selections)
-        return output
+        return {'done': True, 'text': output}
 

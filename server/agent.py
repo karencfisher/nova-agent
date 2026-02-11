@@ -71,29 +71,16 @@ class Agent:
                     tool_thread = Thread(target=self.__call_tool, args=(tool_call,))
                     tool_thread.start()
                     
-                    commented = False
                     while True:
-                        try:
-                            returned_content = self.tool_queue.get(timeout=15)
-                        except Empty:
-                            if not commented:
-                                prompt = f"Kindly inform the user what you are doing and this "\
-                                        + "may take some time. The tool you are running is in "\
-                                        + f"{tool_call.function.name} and the query is in "\
-                                        + f"{json.loads(tool_call.function.arguments)} "\
-                                        + "Do not at this point elaborate on the query. "
-                                self.__comment(prompt)
-                                commented = True
+                        returned_content = self.tool_queue.get()
+                        if not returned_content['done']:
+                            prompt = 'Kindly inform user the status of the request in progress. '\
+                                     + f'The tool running is {tool_call.function.name} with the '\
+                                     + f'parameters {json.loads(tool_call.function.arguments)}. '\
+                                     + f'This is the status: {returned_content['text']}. Otherwise '\
+                                     + 'do not engage the user for furter feedback on the request.'
+                            self.__comment(prompt)
                         else:
-                            if commented:
-                                prompt = f"Kindly inform the user you are almost done and "\
-                                        + "thank them for their patience. "\
-                                        + "The tool you are running is in "\
-                                        + f"{tool_call.function.name} and the query is in "\
-                                        + f"{json.loads(tool_call.function.arguments)} "\
-                                        + "Do not at this point elaborate on the query. "
-                                self.__comment(prompt)
-                                commented = False
                             break
 
                     # add the tool call response to the message history 
@@ -101,13 +88,17 @@ class Agent:
                         "role": "tool",
                         "tool_call_id": tool_call.id, 
                         "name": tool_call.function.name, 
-                        "content": returned_content
+                        "content": returned_content['text']
                     })
                     
     def __call_tool(self, tool_call):
         arguments = json.loads(
             tool_call.function.arguments
         )
+
+        # Inject tool queue to parameters
+        arguments['tool_queue'] = self.tool_queue
+
         func = self.tools[tool_call.function.name]
         returned_content = func(**arguments)
         self.tool_queue.put(returned_content)

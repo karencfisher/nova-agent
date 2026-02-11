@@ -19,9 +19,9 @@ class Search:
     
     google_search = SearchTool()
     
-    def run(query):
-        print(f'\nSearching on {query}')
-        results = Search.google_search.run(query)
+    def run(**kwargs):
+        print(f'\nSearching on {kwargs['query']}')
+        results = Search.google_search.run(**kwargs)
         print(f'Results: {results}\n')
         return results
     

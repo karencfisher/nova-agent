@@ -21,7 +21,7 @@ class GetTime:
     }
 
     @staticmethod
-    def get_todays_date():
+    def get_todays_date(**kwargs):
         now = datetime.now()
         current_date = now.date().isoformat()
         day_of_week = now.strftime('%A')
