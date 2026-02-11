@@ -5,12 +5,8 @@ from utils.timer import timer
 
 class ChatMemory:
     def __init__(self, sys_prompt, agent_memory, max_messages=100):
-        self.chat_memory = [
-            # system prompt 
-            {
-                "role": "system", "content": f'{sys_prompt}\n#MEMORY\n {json.dumps(agent_memory)}]'
-            }
-        ]    
+        self.agent_memory = agent_memory
+        self.sys_prompt = sys_prompt
         
         if os.path.exists('tools\\memory\\chat_messages.json'):
             with open('tools\\memory\\chat_messages.json', 'r', encoding='utf-8') as FILE:
@@ -26,7 +22,11 @@ class ChatMemory:
         self.__write_messages()
         
     def get_chat_memory(self):
-        return self.chat_memory + self.messages
+        system_block = [{
+            "role": "system",
+            "content": f'{self.sys_prompt}\n\n#CORE MEMORY\n {json.dumps(self.agent_memory)}]'
+        }]
+        return system_block + self.messages
     
     def get_last_message(self):
         if len(self.messages) > 0:

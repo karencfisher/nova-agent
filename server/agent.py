@@ -4,7 +4,7 @@ from queue import Queue, Empty
 from threading import Thread
 from dotenv import load_dotenv
 from openai import OpenAI
-from tools.memory.core_memory import CoreMemory, ContextMemory
+from tools.memory.core_memory import CoreMemory
 from tools.memory.chat_memory import ChatMemory
 from tool_specs import tool_specs
 from utils.timer import timer
