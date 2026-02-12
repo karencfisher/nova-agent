@@ -111,6 +111,12 @@ class SearchTool:
         
         # LLM summarizes content of selections
         content = '\n'.join(contents)
+        # prompt = f'Write a detailed summary of the following information:\n{content}'
+        # chat_completion = self.client.chat.completions.create(
+        #     model="gpt-4o-mini",
+        #     messages=[{'role': 'user', 'content': prompt}]
+        # )
+        # summary = chat_completion.choices[0]
         response = f"{content}\n\n{references}"
         return response
     
@@ -136,7 +142,7 @@ class SearchTool:
 
         selections = self.__get_selections(kwargs['query'])
         print(f'Got {len(selections)} selections\ngetting summary\n')
-
+        
         output = self.__get_summary(selections)
         return output
 
