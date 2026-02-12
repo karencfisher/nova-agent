@@ -111,13 +111,13 @@ class SearchTool:
         
         # LLM summarizes content of selections
         content = '\n'.join(contents)
-        prompt = f'Write a detailed summary of the following information:\n{content}'
-        chat_completion = self.client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{'role': 'user', 'content': prompt}]
-        )
-        summary = chat_completion.choices[0]
-        response = f"{summary}\n\n{references}"
+        # prompt = f'Write a detailed summary of the following information:\n{content}'
+        # chat_completion = self.client.chat.completions.create(
+        #     model="gpt-4o-mini",
+        #     messages=[{'role': 'user', 'content': prompt}]
+        # )
+        # summary = chat_completion.choices[0]
+        response = f"{contents}\n\n{references}"
         return response
     
     @timer
@@ -125,27 +125,24 @@ class SearchTool:
         items = self.__get_pages(kwargs['query'])
         if items[0].get('error_response') is not None:
             return(f'Search error: {items[0]["body"]}')
-        print(f'Found {len(items)} pages, parsing pages\n')
+        
         kwargs['tool_queue'].put({
             'done': False, 
-            'text': f'Found {len(items)} pages\ngetting documents\n'
-        })   
+            'text': f'I am searching on {kwargs['query']}. This may take a moment, but I will be '\
+                    +'back with you shortly.'
+        })  
+        print(f'Found {len(items)} pages, parsing pages\n')
+         
         docs = self.__get_documents(items)
         self.__store_documents(docs)
         if not self.db:
             print('No index available after storing documents; returning no results')
             return 'No documents could be indexed for this query.'
         print(f'Stored {len(docs)} documents\ngetting selections\n')
-        kwargs['tool_queue'].put({
-            'done': False, 
-            'text': f'Stored {len(docs)} documents, getting selections\n'
-        })  
+
         selections = self.__get_selections(kwargs['query'])
         print(f'Got {len(selections)} selections\ngetting summary\n')
-        kwargs['tool_queue'].put({
-            'done': False, 
-            'text': f'Stored {len(docs)} summarizing results\n'
-        })  
+        
         output = self.__get_summary(selections)
         return output
 

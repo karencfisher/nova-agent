@@ -22,9 +22,12 @@ class GetTime:
 
     @staticmethod
     def get_todays_date(**kwargs):
-        now = datetime.now()
-        current_date = now.date().isoformat()
-        day_of_week = now.strftime('%A')
-        current_time = now.strftime('%H:%M:%S')
-        result = {"date": current_date, "day": day_of_week, "time": current_time}
-        return {'done': True, 'text': json.dumps(result)}
+        try:
+            now = datetime.now()
+            current_date = now.date().isoformat()
+            day_of_week = now.strftime('%A')
+            current_time = now.strftime('%H:%M:%S')
+            result = {"date": current_date, "day": day_of_week, "time": current_time}
+            return {'done': True, 'text': json.dumps(result)}
+        except Exception as err:
+            return {'donr': True, 'text': f'Error occured: {err}'}

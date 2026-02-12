@@ -75,8 +75,11 @@ class MemoryRetrieval:
     
     def memory_retrieve(**kwargs):
         # from context memory
-        documents = ContextMemory().retrieve_memories(kwargs['query'], 10)
-        return {'done': True, 'text': documents}
+        try:
+            documents = ContextMemory().retrieve_memories(kwargs['query'], 10)
+            return {'done': True, 'text': documents}
+        except Exception as err:
+            return {'done': True, 'text': f'Error occured: {err}'}
             
         
 class ContextMemory:

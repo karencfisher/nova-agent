@@ -74,12 +74,10 @@ class Agent:
                     while True:
                         returned_content = self.tool_queue.get()
                         if not returned_content['done']:
-                            prompt = 'Kindly inform user the status of the request in progress. '\
-                                     + f'The tool running is {tool_call.function.name} with the '\
-                                     + f'parameters {json.loads(tool_call.function.arguments)}. '\
-                                     + f'This is the status: {returned_content['text']}. Otherwise '\
-                                     + 'do not engage the user for furter feedback on the request.'
-                            self.__comment(prompt)
+                            self.message_queue.put({
+                                'content': returned_content['text'],
+                                'final': False
+                        })
                         else:
                             break
 
@@ -96,30 +94,13 @@ class Agent:
             tool_call.function.arguments
         )
 
-        # Inject tool queue to parameters
+        # Inject tool queue 
         arguments['tool_queue'] = self.tool_queue
 
         func = self.tools[tool_call.function.name]
         returned_content = func(**arguments)
         self.tool_queue.put(returned_content)
         
-    def __comment(self, prompt):
-        chat_completion = self.client.chat.completions.create(
-            model=self.model,
-            temperature=1,
-            messages=[
-                {
-                    "role": "assistant", 
-                    "content": prompt
-                }
-            ],
-        )
-        response = chat_completion.choices[0]
-        # self.chat_memory.append(response.message.dict())
-        self.message_queue.put({
-            'content': response.message.content.replace('\n', '|'), 
-            'final': False
-        })
 
 
         
