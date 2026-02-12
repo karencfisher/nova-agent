@@ -16,7 +16,7 @@ class AsyncWebScraper:
         ua = UserAgent
         header = {'User-Agent': str(ua.chrome)}
         try:
-            async with session.get(item['link'], headers=header, timeout=5) as response:
+            async with session.get(item['link'], headers=header, timeout=2) as response:
                 article_text = await response.text()
                 soup = BeautifulSoup(article_text, 'html.parser')
                 text = soup.get_text().strip()
