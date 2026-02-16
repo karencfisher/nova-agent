@@ -2,9 +2,9 @@ import time
 
 
 def timer(func):
-    def wrapper_func(*args):
+    def wrapper_func(*args, **kwargs):
         start_time = time.time()
-        result = func(*args)
+        result = func(*args, **kwargs)
         elapsed_time = time.time() - start_time
         print(f'{func} took {elapsed_time} seconds')
         return result

@@ -14,7 +14,10 @@ class Browser:
         }
     }
     
-    def run(url):
-        open_page(url, new=0)
-        return f'url opened'
+    def run(**kwargs):
+        try:
+            open_page(kwargs['url'], new=0)
+            return {'done': True, 'text': f'kwargs["url"] opened'}
+        except Exception as err:
+            return {'done': True, 'text': f'Error occured: {err}'}
     

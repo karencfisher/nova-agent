@@ -19,10 +19,13 @@ class Search:
     
     google_search = SearchTool()
     
-    def run(query):
-        print(f'\nSearching on {query}')
-        results = Search.google_search.run(query)
-        print(f'Results: {results}\n')
-        return results
+    def run(**kwargs):
+        try:
+            print(f'\nSearching on {kwargs['query']}')
+            results = Search.google_search.run(**kwargs)
+            print(f'Results: {results}\n')
+            return {'done': True, 'text': results}
+        except Exception as err:
+            return {'done': True, 'text': f'Error occured: {err}'}
     
         

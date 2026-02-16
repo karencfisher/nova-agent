@@ -71,29 +71,14 @@ class Agent:
                     tool_thread = Thread(target=self.__call_tool, args=(tool_call,))
                     tool_thread.start()
                     
-                    commented = False
                     while True:
-                        try:
-                            returned_content = self.tool_queue.get(timeout=15)
-                        except Empty:
-                            if not commented:
-                                prompt = f"Kindly inform the user what you are doing and this "\
-                                        + "may take some time. The tool you are running is in "\
-                                        + f"{tool_call.function.name} and the query is in "\
-                                        + f"{json.loads(tool_call.function.arguments)} "\
-                                        + "Do not at this point elaborate on the query. "
-                                self.__comment(prompt)
-                                commented = True
+                        returned_content = self.tool_queue.get()
+                        if not returned_content['done']:
+                            self.message_queue.put({
+                                'content': returned_content['text'],
+                                'final': False
+                        })
                         else:
-                            if commented:
-                                prompt = f"Kindly inform the user you are almost done and "\
-                                        + "thank them for their patience. "\
-                                        + "The tool you are running is in "\
-                                        + f"{tool_call.function.name} and the query is in "\
-                                        + f"{json.loads(tool_call.function.arguments)} "\
-                                        + "Do not at this point elaborate on the query. "
-                                self.__comment(prompt)
-                                commented = False
                             break
 
                     # add the tool call response to the message history 
@@ -101,34 +86,21 @@ class Agent:
                         "role": "tool",
                         "tool_call_id": tool_call.id, 
                         "name": tool_call.function.name, 
-                        "content": returned_content
+                        "content": returned_content['text']
                     })
                     
     def __call_tool(self, tool_call):
         arguments = json.loads(
             tool_call.function.arguments
         )
+
+        # Inject tool queue 
+        arguments['tool_queue'] = self.tool_queue
+
         func = self.tools[tool_call.function.name]
         returned_content = func(**arguments)
         self.tool_queue.put(returned_content)
         
-    def __comment(self, prompt):
-        chat_completion = self.client.chat.completions.create(
-            model=self.model,
-            temperature=1,
-            messages=[
-                {
-                    "role": "assistant", 
-                    "content": prompt
-                }
-            ],
-        )
-        response = chat_completion.choices[0]
-        # self.chat_memory.append(response.message.dict())
-        self.message_queue.put({
-            'content': response.message.content.replace('\n', '|'), 
-            'final': False
-        })
 
 
         

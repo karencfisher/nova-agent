@@ -42,20 +42,20 @@ class CoreMemory:
     with open('tools\\memory\\agent_memory.json', 'r', encoding='utf-8') as FILE:
         agent_memory = json.load(FILE)
             
-    def memory_save(section, contextual, memory_key, memory_value):
+    def memory_save(**kwargs):
         try:
-            if contextual and section == 'user':
+            if kwargs['contextual'] and kwargs['section'] == 'user':
                 print('Saving contextual memory for user')
                 ContextMemory().store_memory({
-                    'key': memory_key,
-                    'content': memory_value
+                    'key': kwargs['memory_key'],
+                    'content': kwargs['memory_value']
                 })
             else:
-                CoreMemory.agent_memory[section][memory_key] = memory_value
+                CoreMemory.agent_memory[kwargs['section']][kwargs['memory_key']] = kwargs['memory_value']
                 CoreMemory.persist_memory()
-            return f'Updated memory'
+            return {'done': True, 'text': 'Updated memory'}
         except Exception as err:
-            return f'An error occured: {err}'
+            return {'done': True, 'text': f'An error occured: {err}'}
            
     def persist_memory():
         with open('tools\\memory\\agent_memory.json', 'w', encoding='utf-8') as FILE:
@@ -73,10 +73,13 @@ class MemoryRetrieval:
         }
     }   
     
-    def memory_retrieve(query):
+    def memory_retrieve(**kwargs):
         # from context memory
-        documents = ContextMemory().retrieve_memories(query, 10)
-        return documents
+        try:
+            documents = ContextMemory().retrieve_memories(kwargs['query'], 10)
+            return {'done': True, 'text': documents}
+        except Exception as err:
+            return {'done': True, 'text': f'Error occured: {err}'}
             
         
 class ContextMemory:

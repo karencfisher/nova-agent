@@ -28,7 +28,7 @@ tool_specs = [
                 "parameters": {
                     "type": "object",
                     "properties": CoreMemory.properties,
-                    "required": ["section", "memory_key", "memory_value"],
+                    "required": ["section", "contextual", "memory_key", "memory_value"],
                 },
             }
         }
