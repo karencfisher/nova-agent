@@ -1,3 +1,6 @@
 .env
-__pycache__
+__pycache__/
+.cache/
 chat_messages.json
+messages_index/
+agent_memory.json

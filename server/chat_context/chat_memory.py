@@ -1,15 +1,20 @@
 from uuid import uuid4
 import os
 import json
+from pathlib import Path
+
 from utils.timer import timer
 
 class ChatMemory:
-    def __init__(self, sys_prompt, agent_memory, max_messages=100):
+    def __init__(self, sys_prompt, agent_memory, max_messages=100, persist=False):
         self.agent_memory = agent_memory
         self.sys_prompt = sys_prompt
+        self.persist = persist
+
+        self.chat_messages = Path('chat_context/chat_messages.json')
         
-        if os.path.exists('tools\\memory\\chat_messages.json'):
-            with open('tools\\memory\\chat_messages.json', 'r', encoding='utf-8') as FILE:
+        if persist and os.path.exists(self.chat_messages):
+            with open(self.chat_messages, 'r', encoding='utf-8') as FILE:
                 self.messages = json.load(FILE)
         else:
             self.messages = []
@@ -19,7 +24,8 @@ class ChatMemory:
         self.messages.append(data)
         if len(self.messages) > self.max_messages:
             self.messages = self.messages[-self.max_messages:]
-        self.__write_messages()
+        if self.persist:
+            self.__write_messages()
         
     def get_chat_memory(self):
         system_block = [{
@@ -36,7 +42,7 @@ class ChatMemory:
            
     def __write_messages(self):
         messages = self.__filter_messages(self.messages)
-        with open('tools\\memory\\chat_messages.json', 'w', encoding='utf-8') as FILE:
+        with open(self.chat_messages, 'w', encoding='utf-8') as FILE:
             json.dump(messages, FILE)
         
     def __filter_messages(self, messages):

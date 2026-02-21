@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 from langchain_community.vectorstores import FAISS
@@ -39,10 +40,12 @@ class CoreMemory:
         }
     }
     
-    with open('tools\\memory\\agent_memory.json', 'r', encoding='utf-8') as FILE:
+    agent_memory_file = Path('tools/memory/agent_memory.json')
+    with open(agent_memory_file, 'r', encoding='utf-8') as FILE:
         agent_memory = json.load(FILE)
             
-    def memory_save(**kwargs):
+    @classmethod
+    def memory_save(cls, **kwargs):
         try:
             if kwargs['contextual'] and kwargs['section'] == 'user':
                 print('Saving contextual memory for user')
@@ -57,12 +60,14 @@ class CoreMemory:
         except Exception as err:
             return {'done': True, 'text': f'An error occured: {err}'}
            
-    def persist_memory():
-        with open('tools\\memory\\agent_memory.json', 'w', encoding='utf-8') as FILE:
+    @classmethod
+    def persist_memory(cls):
+        with open(cls.agent_memory_file, 'w', encoding='utf-8') as FILE:
             json.dump(CoreMemory.agent_memory, FILE)
             
             
 class MemoryRetrieval:
+
     description = "Retrieve memories from the agent's memory whenever you chose to use. "\
         + "during conversation."
     
@@ -85,11 +90,12 @@ class MemoryRetrieval:
 class ContextMemory:
     def __init__(self):
         self.embeddings = HuggingFaceEmbeddings()
-        if not os.path.exists('tools\\memory\\messages_index'):
+        self.memory_store = Path('tools/memory/messages_index')
+        if not os.path.exists(self.memory_store):
             self.messages_index = None
         else:
             self.messages_index = FAISS.load_local(
-                'tools\\memory\\messages_index', 
+                self.memory_store, 
                 self.embeddings, 
                 allow_dangerous_deserialization=True
             )
@@ -97,10 +103,10 @@ class ContextMemory:
     def retrieve_memories(self, query, k):
         if not query:
             return ""
-        if not os.path.exists('tools\\memory\\messages_index'):
+        if not os.path.exists(self.memory_store):
             return ""
         self.messages_index = FAISS.load_local(
-            'tools\\memory\\messages_index',
+            self.memory_store,
             self.embeddings,
             allow_dangerous_deserialization=True
         )
@@ -118,5 +124,5 @@ class ContextMemory:
             self.messages_index = FAISS.from_documents([document], self.embeddings)
         else:
             self.messages_index.add_documents([document])
-        self.messages_index.save_local('tools\\memory\\messages_index')  
+        self.messages_index.save_local(self.memory_store)  
     
