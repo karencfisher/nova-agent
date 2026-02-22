@@ -24,7 +24,8 @@ class MainAgent(BaseAgent):
             chat_memory, 
             model=model,
             reasoning_level='medium', 
-            tools=['all'])
+            tools=['all']
+        )
     
     def preprocess_messages(self, messages, reasoning_level):
         if messages[-1]['role'] == 'user':
