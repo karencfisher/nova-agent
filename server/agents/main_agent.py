@@ -16,7 +16,8 @@ class MainAgent(BaseAgent):
         chat_memory = ChatMemory(
             system_prompt, 
             CoreMemory.agent_memory,
-            persist=True)
+            persist=True
+        )
         
         super(MainAgent, self).__init__(
             message_queue, 
