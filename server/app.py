@@ -1,13 +1,14 @@
 import os
 from dotenv import load_dotenv
 import traceback
-
 import json
 from threading import Thread
 from queue import Queue, Empty
 from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
+
 from agents.main_agent import MainAgent
+from repositories.conversations import Conversations
 
 
 app = Flask(__name__)
@@ -34,6 +35,18 @@ def message():
         msg_thread = Thread(target=agent.agent_step, args=(message,))
         msg_thread.start()
         return jsonify({"success": "OK"})
+    except Exception as err:
+        traceback.print_tb(err.__traceback__)
+        print(err)
+        return jsonify({"error": str(err)}), 500
+    
+@app.route('/get_conversations')
+def get_conversations():
+    try:
+        result = Conversations.get_conversations()
+        if result['error'] is not None:
+            raise SystemError(result['error']) 
+        return jsonify(result['data'])
     except Exception as err:
         traceback.print_tb(err.__traceback__)
         print(err)
