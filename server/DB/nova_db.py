@@ -4,8 +4,8 @@ import importlib.resources
 from pathlib import Path
 
 class NovaDB:
-    def __init__(self):
-        self.db_path = Path(__file__).parent / "nova.db"
+    def __init__(self, db='nova.db'):
+        self.db_path = Path(__file__).parent / db
         self.ext_path = importlib.resources.files("sqlite_vector.binaries") / "vector"
 
     @contextmanager
