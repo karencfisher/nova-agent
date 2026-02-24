@@ -4,3 +4,6 @@ __pycache__/
 chat_messages.json
 messages_index/
 agent_memory.json
+htmlcov/
+.coverage
+*.db

@@ -40,6 +40,15 @@ SET deleted = 1
 WHERE id = {id};
 '''
         return cls.dbn.execute_sql(sql)
+    
+    @classmethod
+    def undelete_conversation(cls, id):
+        sql = f'''
+UPDATE conversations
+SET deleted = 0
+WHERE id = {id};
+'''
+        return cls.dbn.execute_sql(sql)
 
 ### messages
     @classmethod
@@ -56,7 +65,7 @@ AND evicted = 0;
         message_dict = json.loads(message)
 
         role = message_dict['role']
-        if isinstance(message_dict['content'], dict):
+        if role == 'user' and isinstance(message_dict['content'], dict):
             content = message_dict['content']['text']
             meta_json = json.dumps(message_dict['content']['metadata'])
         else:
