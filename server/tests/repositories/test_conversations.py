@@ -48,7 +48,9 @@ class TestConversations(unittest.TestCase):
         # Assert
         mock_db.execute_sql.assert_called_once()
         executed_sql = mock_db.execute_sql.call_args[0][0]
-        self.assertIn(f"UPDATE conversations\nSET title = {new_title}\nWHERE id = {conversation_id};", executed_sql)
+        self.assertIn(f"UPDATE conversations\nSET title = {new_title},", executed_sql)
+        self.assertIn("updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')", executed_sql)
+        self.assertIn(f"WHERE id = {conversation_id};", executed_sql)
 
     @patch('repositories.conversations.Conversations.dbn')
     def test_add_messages_to_conversation_1(self, mock_db):

@@ -27,7 +27,8 @@ VALUES ({title});
     def update_conversation(cls, id, new_title):
         sql = f'''
 UPDATE conversations
-SET title = {new_title}
+SET title = {new_title},
+    updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
 WHERE id = {id};
 '''
         return cls.dbn.execute_sql(sql)

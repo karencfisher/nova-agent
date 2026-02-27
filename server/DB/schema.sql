@@ -47,15 +47,18 @@ CREATE INDEX IF NOT EXISTS idx_memory_kind_time
 /* ---------------------------
    Core memory (curated, stable)
 --------------------------- */
-CREATE TABLE IF NOT EXISTS core_memories (
+CREATE TABLE core_memories (
   id          INTEGER PRIMARY KEY,
-  key         TEXT NOT NULL UNIQUE,
+  role        TEXT NOT NULL CHECK (role IN ('user','agent')),
+  key         TEXT NOT NULL,
   value       TEXT NOT NULL,
   is_active   INTEGER NOT NULL DEFAULT 1,
   created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-  provenance_json TEXT
+  updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_core_memories_role_key
+ON core_memories(role, key);
 
 
 /* ---------------------------
