@@ -125,6 +125,12 @@ class TestDeletions(unittest.TestCase):
 
         results = Conversations.get_messages(1)
         self.assertEqual(len(results['data']), 5)
+
+        result = Conversations.evict_messages(1, 2)
+        self.assertEqual(result['error'], None, f"Failed evict 5")
+
+        results = Conversations.get_messages(1)
+        self.assertEqual(len(results['data']), 3)
         
 
 
