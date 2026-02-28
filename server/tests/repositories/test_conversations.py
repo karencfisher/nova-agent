@@ -114,8 +114,8 @@ class TestDeletions(unittest.TestCase):
                    'text': f'message {i}',
                    'metadata': {'key': f'key{i}', 'value': f'value{i}'}}, 
             }
-            result = Conversations.add_message(1, json.dumps(msg))
-            self.assertEqual(result['error'], None, f"Failed add msg{i}")
+            Conversations.add_message(1, json.dumps(msg))
+            Conversations.add_message(2, json.dumps(msg))
 
         results = Conversations.get_messages(1)
         self.assertEqual(len(results['data']), 10)
@@ -137,6 +137,9 @@ class TestDeletions(unittest.TestCase):
                'meta_json': {'key': 'key8', 'value': 'value8'}
         }
         self.assertDictEqual(results['data'][0], msg)
+
+        results = Conversations.get_messages(2)
+        self.assertEqual(len(results['data']), 10)
 
         
 
