@@ -34,7 +34,7 @@ class NovaDB:
         finally:
             conn.close()
 
-    def execute_sql(self, sql, returns_data=False):
+    def execute_sql(self, sql, params=None, returns_data=False):
         try:
             data = []
             error = None
@@ -42,12 +42,18 @@ class NovaDB:
             with self._conn() as CONN:
                 CONN.row_factory = sqlite3.Row
                 cursor = CONN.cursor()
-                result = cursor.execute(sql)
+                if params is None:
+                    result = cursor.execute(sql)
+                else:
+                    result = cursor.execute(sql, params)
+
                 if returns_data:
                     rows = result.fetchall()
                     data = [dict(row) for row in rows]
+
         except Exception as err:
             error = str(err)
+            
         finally:
             return {'data': data, 'error': error}
     

@@ -11,7 +11,8 @@ class Conversations:
     def get_conversations(cls):
         sql = '''
 SELECT id, title FROM conversations
-ORDER BY updated_at DESC;
+WHERE deleted = 0
+ORDER BY id DESC;
 '''
         return cls.dbn.execute_sql(sql, returns_data=True)
 
@@ -19,47 +20,56 @@ ORDER BY updated_at DESC;
     def add_conversation(cls, title):
         sql = f'''
 INSERT INTO conversations (title)
-VALUES ({title});
+VALUES (?);
 '''
-        return cls.dbn.execute_sql(sql)
+        params = (title,)
+        return cls.dbn.execute_sql(sql, params)
 
     @classmethod
     def update_conversation(cls, id, new_title):
         sql = f'''
 UPDATE conversations
-SET title = {new_title},
+SET title = ?,
     updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
-WHERE id = {id};
+WHERE id = ?;
 '''
-        return cls.dbn.execute_sql(sql)
+        params = (new_title, id)
+        return cls.dbn.execute_sql(sql, params)
 
     @classmethod
     def delete_conversation(cls, id):
         sql = f'''
 UPDATE conversations
 SET deleted = 1
-WHERE id = {id};
+WHERE id = ?;
 '''
-        return cls.dbn.execute_sql(sql)
+        params = (id,)
+        return cls.dbn.execute_sql(sql, params)
     
     @classmethod
     def undelete_conversation(cls, id):
         sql = f'''
 UPDATE conversations
 SET deleted = 0
-WHERE id = {id};
+WHERE id = ?;
 '''
-        return cls.dbn.execute_sql(sql)
+        params = (id,)
+        return cls.dbn.execute_sql(sql, params)
 
 ### messages
     @classmethod
     def get_messages(cls, conv_id):
         sql = f'''
-SELECT role, content, meta_json FROM message
-WHERE conversation_id = {conv_id}
+SELECT role, content, meta_json FROM messages
+WHERE conversation_id = ?
 AND evicted = 0;
 '''
-        return cls.dbn.execute_sql(sql, returns_data=True)
+        params = (conv_id,)
+        results = cls.dbn.execute_sql(sql, params, returns_data=True)
+        for result in results['data']:
+            if result['meta_json'] is not None:
+                result['meta_json'] = json.loads(result['meta_json'])
+        return results
 
     @classmethod
     def add_message(cls, conv_id, message):
@@ -75,9 +85,10 @@ AND evicted = 0;
 
         sql = f'''
 INSERT INTO messages (conversation_id, role, content, meta_json)
-VALUES ({conv_id}, {role}, {content}, {meta_json});
+VALUES (?, ?, ?, ?);
 '''
-        return cls.dbn.execute_sql(sql)
+        params = (conv_id, role, content, meta_json)
+        return cls.dbn.execute_sql(sql, params)
 
     @classmethod
     def evict_messages(cls, conv_id, count):
@@ -86,11 +97,12 @@ UPDATE messages
 SET evicted = 1
 WHERE id in (
     SELECT id FROM messages
-    WHERE conversation_id = {conv_id} 
+    WHERE conversation_id = ? 
         AND evicted = 0
         AND role != 'system'
     ORDER BY id ASC
-    LIMIT {count}
+    LIMIT ?
 );
 ''' 
-        return cls.dbn.execute_sql(sql)
+        params = (conv_id, count)
+        return cls.dbn.execute_sql(sql, params)

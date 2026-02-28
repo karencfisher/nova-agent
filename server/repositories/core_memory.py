@@ -1,5 +1,4 @@
 import json
-from sqlite3 import IntegrityError
 
 from DB.nova_db import NovaDB
 
