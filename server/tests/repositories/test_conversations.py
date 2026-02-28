@@ -131,6 +131,13 @@ class TestDeletions(unittest.TestCase):
 
         results = Conversations.get_messages(1)
         self.assertEqual(len(results['data']), 3)
+
+        msg = {'role': 'user', 
+               'content': 'message 8',
+               'meta_json': {'key': 'key8', 'value': 'value8'}
+        }
+        self.assertDictEqual(results['data'][0], msg)
+
         
 
 
